@@ -96,7 +96,7 @@ label,.lbl{display:block;font-weight:600;margin:0 0 8px}
       </div>
 
       <div class="row">
-        <label for="ppl">عدد الكبار</label>
+        <label for="ppl">عدد الأشخاص</label>
         <div class="step">
           <button class="btn" id="plus" type="button" aria-label="زيادة الكبار">+</button>
           <input id="ppl" type="number" inputmode="numeric" min="1" max="500" value="4">
@@ -161,7 +161,7 @@ function calc(){
   const a=toNum(amt.value);const n=Math.floor(+ppl.value)||0;const k=Math.max(0,Math.floor(+kidsEl.value)||0);
   const c='<span class="sar" role="img" aria-label="ريال"></span>',ct='ريال';
   $('kidOpt').hidden=!k;
-  if(!a||n<1){out.innerHTML=`<div class="empty">${!a?'اكتب المبلغ عشان نحسب القطة':'عدد الكبار لازم يكون 1 أو أكثر'}</div>`;last='';save();return}
+  if(!a||n<1){out.innerHTML=`<div class="empty">${!a?'اكتب المبلغ عشان نحسب القطة':'عدد الأشخاص لازم يكون 1 أو أكثر'}</div>`;last='';save();return}
   const total=a;
   const up=x=>rnd?Math.ceil(x/rnd-1e-9)*rnd:Math.ceil(x*100-1e-6)/100;
   const base=total/(n+k*kf);
@@ -172,11 +172,11 @@ function calc(){
   const ppl_html=Array.from({length:showA},(_,i)=>`<div class="p">${person(colors[i%colors.length])}${i+1}</div>`).join('')+(n>showA?`<span class="more">+${n-showA}</span>`:'')
     +Array.from({length:showK},(_,i)=>`<div class="p kid">${person(colors[(i+3)%colors.length])}طفل</div>`).join('')+(k>showK?`<span class="more">+${k-showK}</span>`:'');
   out.innerHTML=`
-    <div class="big"><div class="k">${k?'على كل كبير':'على كل شخص'}</div><span class="v" id="v">${fmt(each)}</span><span class="cur">${c}</span>
+    <div class="big"><div class="k">${k?'على كل شخص':'على كل شخص'}</div><span class="v" id="v">${fmt(each)}</span><span class="cur">${c}</span>
       ${k?`<div class="sub">وعلى كل طفل (${kname}) <b>${fmt(kidEach)}</b> ${c}</div>`:''}</div>
     <div class="lines">
       <div class="ln"><span>المبلغ</span><b>${fmt(total)} ${c}</b></div>
-      <div class="ln"><span>${k?'الكبار':'عدد الأشخاص'}</span><b>${n} × ${fmt(each)}</b></div>
+      <div class="ln"><span>${k?'الأشخاص':'عدد الأشخاص'}</span><b>${n} × ${fmt(each)}</b></div>
       ${k?`<div class="ln"><span>الأطفال (${kname} مبلغ)</span><b>${k} × ${fmt(kidEach)}</b></div>`:''}
       <div class="ln tot"><span>المبلغ الإجمالي</span><b>${fmt(collected)} ${c}</b></div>
       ${extra>0.004?`<div class="ln extra"><span>زيادة بسبب التقريب</span><b>${fmt(extra)} ${c}</b></div>`:''}
@@ -184,7 +184,7 @@ function calc(){
   const key=each+'|'+kidEach;
   const v=$('v');if(key!==last){v.classList.add('pop');setTimeout(()=>v.classList.remove('pop'),250)}
   last=key;
-  out.dataset.text=`🧾 القطة\nالمبلغ: ${fmt(total)} ${ct}\n`+(k?`الكبار: ${n} — على كل كبير ${fmt(each)} ${ct}\nالأطفال: ${k} — على كل طفل ${fmt(kidEach)} ${ct} (${kname} مبلغ الكبير)`:`عدد الأشخاص: ${n}\nعلى كل شخص: ${fmt(each)} ${ct}`);
+  out.dataset.text=`🧾 القطة\nالمبلغ: ${fmt(total)} ${ct}\n`+(k?`الكبار: ${n} — على كل شخص ${fmt(each)} ${ct}\nالأطفال: ${k} — على كل طفل ${fmt(kidEach)} ${ct} (${kname} مبلغ الشخص)`:`عدد الأشخاص: ${n}\nعلى كل شخص: ${fmt(each)} ${ct}`);
   save();
 }
 
