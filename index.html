@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حاسبة القطة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ودود وسريع، أداة يومية بين الأصحاب
+   IDEA: فاتورة المطعم الورقية تنقسم على الجالسين حول السفرة
+   PICTURE: إيصال كبير يعرض "على كل شخص" بخط ضخم، وتحته صف دوائر تمثل الأشخاص
+   COLOUR and TYPE: أرضية مرجانية دافئة، ورق أبيض، حبر داكن، لمسة زعفران؛ Readex Pro للأرقام والعناوين و IBM Plex Sans Arabic للنص
+   LAYOUT: عمود الإدخال بجانب الإيصال، ويتكدسان على الجوال: العنوان، الإيصال، ثم الحقول */
+:root{color-scheme:light dark;
+  --bg:light-dark(#7d86f3,#1d2050);
+  --paper:light-dark(#ffffff,#0f2214);
+  --ink:light-dark(#0f2214,#e1f7c8);
+  --soft:light-dark(#55665a,#a9bfae);
+  --line:light-dark(#d6e1da,#2c4a33);
+  --acc:#e1f7c8;
+  --field:light-dark(#f1f2fe,#19351f);
+  --dark:light-dark(#19351f,#e1f7c8);
+  --ondark:light-dark(#e1f7c8,#0f2214);
+  --red:light-dark(#b4453c,#f39a8f);
+  --onbg:light-dark(#0f2214,#e1f7c8)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Tajawal",system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+.band{padding:clamp(28px,4vw,64px) max(5vw,16px);max-width:720px;margin:0 auto}
+h1{font:700 clamp(32px,5vw,52px)/1.05 "Tajawal",sans-serif;margin:0 0 8px;color:var(--onbg);text-wrap:balance}
+.lead{margin:0 0 44px;color:var(--onbg);opacity:.85;max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(16px,3vw,36px);align-items:start}
+.card{background:var(--paper);border-radius:22px;padding:clamp(20px,3vw,32px);box-shadow:0 18px 40px -18px rgba(20,24,90,.35)}
+label,.lbl{display:block;font-weight:600;margin:0 0 8px}
+.row{margin-bottom:22px}
+.amount{display:flex;align-items:center;background:var(--field);border:2px solid var(--line);border-radius:14px;padding:0 14px}
+.amount:focus-within,.step:focus-within{border-color:var(--ink)}
+.amount input{flex:1;border:0;background:none;color:var(--ink);font:700 28px "Tajawal",sans-serif;padding:12px 0;outline:0;direction:ltr;text-align:right;width:100%}
+.amount select{border:0;background:none;color:var(--soft);font:700 16px "Tajawal",sans-serif;padding:8px 4px;cursor:pointer}
+.step{display:flex;align-items:center;gap:8px;background:var(--field);border:2px solid var(--line);border-radius:14px;padding:6px}
+.step input{flex:1;border:0;background:none;color:var(--ink);font:700 28px "Tajawal",sans-serif;text-align:center;outline:0;width:100%;-moz-appearance:textfield}
+.step input::-webkit-inner-spin-button{-webkit-appearance:none}
+.btn{min-width:48px;height:48px;border-radius:12px;border:0;background:var(--dark);color:var(--ondark);font:700 24px "Tajawal",sans-serif;cursor:pointer}
+.btn:focus-visible,.chip:focus-visible,.copy:focus-visible,select:focus-visible{outline:3px solid #5a63d8;outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--line);background:var(--field);color:var(--ink);font:500 15px "Tajawal",sans-serif;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--dark);color:var(--ondark);border-color:var(--dark)}
+.hint{font-size:13px;color:var(--soft);margin-top:6px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:.9em;height:.9em;flex:none}
+.top{border-bottom:1px solid rgba(15,34,20,.15);padding:clamp(24px,4vw,48px) max(5vw,16px)}
+.topin{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px}
+.topin h1{margin:0}.topin .lead{margin:0}
+/* الإيصال */
+.sar{display:inline-block;width:.82em;height:.92em;vertical-align:-.08em;background-color:currentColor;-webkit-mask:url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTI0LjE0IDEyNTYuMzkiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICMyMzFmMjA7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTY5OS42MiwxMTEzLjAyaDBjLTIwLjA2LDQ0LjQ4LTMzLjMyLDkyLjc1LTM4LjQsMTQzLjM3bDQyNC41MS05MC4yNGMyMC4wNi00NC40NywzMy4zMS05Mi43NSwzOC40LTE0My4zN2wtNDI0LjUxLDkwLjI0WiIvPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTEwODUuNzMsODk1LjhjMjAuMDYtNDQuNDcsMzMuMzItOTIuNzUsMzguNC0xNDMuMzdsLTMzMC42OCw3MC4zM3YtMTM1LjJsMjkyLjI3LTYyLjExYzIwLjA2LTQ0LjQ3LDMzLjMyLTkyLjc1LDM4LjQtMTQzLjM3bC0zMzAuNjgsNzAuMjdWNjYuMTNjLTUwLjY3LDI4LjQ1LTk1LjY3LDY2LjMyLTEzMi4yNSwxMTAuOTl2NDAzLjM1bC0xMzIuMjUsMjguMTFWMGMtNTAuNjcsMjguNDQtOTUuNjcsNjYuMzItMTMyLjI1LDExMC45OXY1MjUuNjlsLTI5NS45MSw2Mi44OGMtMjAuMDYsNDQuNDctMzMuMzMsOTIuNzUtMzguNDIsMTQzLjM3bDMzNC4zMy03MS4wNXYxNzAuMjZsLTM1OC4zLDc2LjE0Yy0yMC4wNiw0NC40Ny0zMy4zMiw5Mi43NS0zOC40LDE0My4zN2wzNzUuMDQtNzkuN2MzMC41My02LjM1LDU2Ljc3LTI0LjQsNzMuODMtNDkuMjRsNjguNzgtMTAxLjk3di0uMDJjNy4xNC0xMC41NSwxMS4zLTIzLjI3LDExLjMtMzYuOTd2LTE0OS45OGwxMzIuMjUtMjguMTF2MjcwLjRsNDI0LjUzLTkwLjI4WiIvPgo8L3N2Zz4=") center/contain no-repeat;mask:url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTI0LjE0IDEyNTYuMzkiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICMyMzFmMjA7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTY5OS42MiwxMTEzLjAyaDBjLTIwLjA2LDQ0LjQ4LTMzLjMyLDkyLjc1LTM4LjQsMTQzLjM3bDQyNC41MS05MC4yNGMyMC4wNi00NC40NywzMy4zMS05Mi43NSwzOC40LTE0My4zN2wtNDI0LjUxLDkwLjI0WiIvPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTEwODUuNzMsODk1LjhjMjAuMDYtNDQuNDcsMzMuMzItOTIuNzUsMzguNC0xNDMuMzdsLTMzMC42OCw3MC4zM3YtMTM1LjJsMjkyLjI3LTYyLjExYzIwLjA2LTQ0LjQ3LDMzLjMyLTkyLjc1LDM4LjQtMTQzLjM3bC0zMzAuNjgsNzAuMjdWNjYuMTNjLTUwLjY3LDI4LjQ1LTk1LjY3LDY2LjMyLTEzMi4yNSwxMTAuOTl2NDAzLjM1bC0xMzIuMjUsMjguMTFWMGMtNTAuNjcsMjguNDQtOTUuNjcsNjYuMzItMTMyLjI1LDExMC45OXY1MjUuNjlsLTI5NS45MSw2Mi44OGMtMjAuMDYsNDQuNDctMzMuMzMsOTIuNzUtMzguNDIsMTQzLjM3bDMzNC4zMy03MS4wNXYxNzAuMjZsLTM1OC4zLDc2LjE0Yy0yMC4wNiw0NC40Ny0zMy4zMiw5Mi43NS0zOC40LDE0My4zN2wzNzUuMDQtNzkuN2MzMC41My02LjM1LDU2Ljc3LTI0LjQsNzMuODMtNDkuMjRsNjguNzgtMTAxLjk3di0uMDJjNy4xNC0xMC41NSwxMS4zLTIzLjI3LDExLjMtMzYuOTd2LTE0OS45OGwxMzIuMjUtMjguMTF2MjcwLjRsNDI0LjUzLTkwLjI4WiIvPgo8L3N2Zz4=") center/contain no-repeat}
+.amount .sar{font-size:26px;color:var(--soft);margin-inline-start:4px}
+.receipt{position:relative}
+.rhead{display:flex;justify-content:space-between;color:var(--soft);font-size:14px;border-bottom:2px dashed var(--line);padding-bottom:12px;margin-bottom:18px}
+.big{text-align:center;padding:8px 0 16px}
+.big .k{font-weight:600;color:var(--soft)}
+.big .v{font:700 clamp(52px,10vw,96px)/1 "Tajawal",sans-serif;direction:ltr;display:inline-block;transition:transform .25s}
+.big .v.pop{transform:scale(1.06)}
+.big .cur{font:700 22px "Tajawal",sans-serif;color:var(--soft);margin-inline-start:6px}
+.people{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:8px 0 22px;min-height:56px}
+.p{width:52px;text-align:center;font-size:12px;color:var(--soft)}
+.p svg{display:block;width:44px;height:44px;margin:0 auto 2px}
+.p.kid svg{width:32px;height:32px;margin-top:12px}
+.big .sub{margin-top:14px;font:700 18px "Tajawal",sans-serif;color:var(--soft)}
+.big .sub b{color:var(--ink);font-size:26px;direction:ltr;display:inline-block}
+.more{align-self:center;font:700 15px "Tajawal",sans-serif;color:var(--soft)}
+.lines{border-top:2px dashed var(--line);padding-top:14px}
+.ln{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+.ln b{font-family:"Tajawal",sans-serif;white-space:nowrap;direction:ltr}
+.ln.tot{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-weight:600}
+.ln.extra b{color:var(--red)}
+.copy{width:100%;min-height:52px;margin-top:20px;border:0;border-radius:14px;background:var(--dark);color:var(--ondark);font:700 17px "Tajawal",sans-serif;cursor:pointer}
+.empty{text-align:center;color:var(--soft);padding:30px 0}
+.foot{color:var(--onbg);opacity:.75;font-size:13px;margin-top:28px}
+
+@media(prefers-reduced-motion:reduce){.big .v{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><h1 class="brand"><svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 6Q63 37 94 50Q63 63 50 94Q37 63 6 50Q37 37 50 6Z" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/></svg>قطتنا</h1><p class="lead">اكتب المبلغ وعدد الأشخاص ونحسب لك قطة كل واحد على طول.</p></div></header>
+<main class="band">
+
+  <div class="grid">
+    <section class="card" aria-label="المدخلات">
+      <div class="row">
+        <label for="amt">مبلغ القطة</label>
+        <div class="amount">
+          <input id="amt" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
+          <span class="sar" role="img" aria-label="ريال سعودي"></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="ppl">عدد الكبار</label>
+        <div class="step">
+          <button class="btn" id="plus" type="button" aria-label="زيادة الكبار">+</button>
+          <input id="ppl" type="number" inputmode="numeric" min="1" max="500" value="4">
+          <button class="btn" id="minus" type="button" aria-label="نقص الكبار">−</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="kids">عدد الأطفال <span class="hint" style="display:inline">(اختياري)</span></label>
+        <div class="step">
+          <button class="btn" id="kplus" type="button" aria-label="زيادة الأطفال">+</button>
+          <input id="kids" type="number" inputmode="numeric" min="0" max="500" value="0">
+          <button class="btn" id="kminus" type="button" aria-label="نقص الأطفال">−</button>
+        </div>
+        <div id="kidOpt" hidden style="margin-top:12px">
+          <span class="lbl">قطة الطفل</span>
+          <div class="chips" id="kshare">
+            <button class="chip" type="button" data-v="0.5" aria-pressed="true">نص مبلغ الكبير</button>
+            <button class="chip" type="button" data-v="0.25" aria-pressed="false">ربع مبلغ الكبير</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:0">
+        <span class="lbl">تقريب قطة الشخص</span>
+        <div class="chips" id="rounds">
+          <button class="chip" type="button" data-v="0" aria-pressed="true">بالهللة</button>
+          <button class="chip" type="button" data-v="1" aria-pressed="false">لأقرب 1</button>
+          <button class="chip" type="button" data-v="5" aria-pressed="false">لأقرب 5</button>
+          <button class="chip" type="button" data-v="10" aria-pressed="false">لأقرب 10</button>
+        </div>
+        <p class="hint">التقريب يكون للأعلى، والزيادة تظهر في الفاتورة.</p>
+      </div>
+    </section>
+
+    <section class="card receipt" aria-live="polite">
+      <div class="rhead"><span>فاتورة القطة</span><span id="date"></span></div>
+      <div id="out"></div>
+      <button class="copy" id="copy" type="button">نسخ القطة للقروب</button>
+    </section>
+  </div>
+  <footer class="foot" style="text-align:center;font-weight:600;opacity:.9;margin-top:36px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--onbg) 20%,transparent)">صنع بواسطة ماريه</footer>
+</main>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const amt=$('amt'),ppl=$('ppl'),out=$('out');
+const kidsEl=$('kids');
+let tip=0,rnd=0,kf=0.5,last='';
+const colors=['#ff6b4a','#ffc53d','#4a9bff','#9b6bff','#2fbf9b','#ff4a8d','#1d1410'];
+const fmt=n=>n.toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2});
+const toNum=s=>{s=String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫,]/g,'.').replace(/[^\d.]/g,'');return parseFloat(s)||0};
+const person=c=>`<svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="21" fill="${c}"/><circle cx="22" cy="17" r="7" fill="#fff" opacity=".92"/><path d="M9 37c2-8 8-11 13-11s11 3 13 11" fill="#fff" opacity=".92"/></svg>`;
+
+function save(){try{localStorage.setItem('qatta',JSON.stringify({a:amt.value,p:ppl.value,r:rnd,k:kidsEl.value,kf}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem('qatta')||'null');if(!d)return;amt.value=d.a||'';ppl.value=d.p||4;rnd=+d.r||0;kidsEl.value=d.k||0;kf=+d.kf===0.25?0.25:0.5;
+  setPressed('rounds',rnd);setPressed('kshare',kf)}catch(e){}}
+function setPressed(g,v){for(const b of $(g).querySelectorAll('.chip'))b.setAttribute('aria-pressed',String(+b.dataset.v===v))}
+
+function calc(){
+  const a=toNum(amt.value);const n=Math.floor(+ppl.value)||0;const k=Math.max(0,Math.floor(+kidsEl.value)||0);
+  const c='<span class="sar" role="img" aria-label="ريال"></span>',ct='ريال';
+  $('kidOpt').hidden=!k;
+  if(!a||n<1){out.innerHTML=`<div class="empty">${!a?'اكتب المبلغ عشان نحسب القطة':'عدد الكبار لازم يكون 1 أو أكثر'}</div>`;last='';save();return}
+  const total=a;
+  const up=x=>rnd?Math.ceil(x/rnd-1e-9)*rnd:Math.ceil(x*100-1e-6)/100;
+  const base=total/(n+k*kf);
+  const each=up(base),kidEach=k?up(base*kf):0;
+  const collected=each*n+kidEach*k,extra=collected-total;
+  const kname=kf===0.5?'نص':'ربع';
+  const showA=Math.min(n,10),showK=Math.min(k,8);
+  const ppl_html=Array.from({length:showA},(_,i)=>`<div class="p">${person(colors[i%colors.length])}${i+1}</div>`).join('')+(n>showA?`<span class="more">+${n-showA}</span>`:'')
+    +Array.from({length:showK},(_,i)=>`<div class="p kid">${person(colors[(i+3)%colors.length])}طفل</div>`).join('')+(k>showK?`<span class="more">+${k-showK}</span>`:'');
+  out.innerHTML=`
+    <div class="big"><div class="k">${k?'على كل كبير':'على كل شخص'}</div><span class="v" id="v">${fmt(each)}</span><span class="cur">${c}</span>
+      ${k?`<div class="sub">وعلى كل طفل (${kname}) <b>${fmt(kidEach)}</b> ${c}</div>`:''}</div>
+    <div class="lines">
+      <div class="ln"><span>المبلغ</span><b>${fmt(total)} ${c}</b></div>
+      <div class="ln"><span>${k?'الكبار':'عدد الأشخاص'}</span><b>${n} × ${fmt(each)}</b></div>
+      ${k?`<div class="ln"><span>الأطفال (${kname} مبلغ)</span><b>${k} × ${fmt(kidEach)}</b></div>`:''}
+      <div class="ln tot"><span>المبلغ الإجمالي</span><b>${fmt(collected)} ${c}</b></div>
+      ${extra>0.004?`<div class="ln extra"><span>زيادة بسبب التقريب</span><b>${fmt(extra)} ${c}</b></div>`:''}
+    </div>`;
+  const key=each+'|'+kidEach;
+  const v=$('v');if(key!==last){v.classList.add('pop');setTimeout(()=>v.classList.remove('pop'),250)}
+  last=key;
+  out.dataset.text=`🧾 القطة\nالمبلغ: ${fmt(total)} ${ct}\n`+(k?`الكبار: ${n} — على كل كبير ${fmt(each)} ${ct}\nالأطفال: ${k} — على كل طفل ${fmt(kidEach)} ${ct} (${kname} مبلغ الكبير)`:`عدد الأشخاص: ${n}\nعلى كل شخص: ${fmt(each)} ${ct}`);
+  save();
+}
+
+function chipGroup(g,set){$(g).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;set(+b.dataset.v);setPressed(g,+b.dataset.v);calc()})}
+chipGroup('rounds',v=>rnd=v);chipGroup('kshare',v=>kf=v);
+$('plus').addEventListener('click',()=>{ppl.value=Math.min(500,(+ppl.value||0)+1);calc()});
+$('minus').addEventListener('click',()=>{ppl.value=Math.max(1,(+ppl.value||2)-1);calc()});
+$('kplus').addEventListener('click',()=>{kidsEl.value=Math.min(500,(+kidsEl.value||0)+1);calc()});
+$('kminus').addEventListener('click',()=>{kidsEl.value=Math.max(0,(+kidsEl.value||0)-1);calc()});
+amt.addEventListener('input',calc);ppl.addEventListener('input',calc);kidsEl.addEventListener('input',calc);
+$('copy').addEventListener('click',async()=>{
+  const b=$('copy'),t=out.dataset.text;
+  if(!t||!last){b.textContent='اكتب المبلغ أول';setTimeout(()=>b.textContent='نسخ القطة للقروب',1500);return}
+  try{await navigator.clipboard.writeText(t);b.textContent='تم النسخ ✓'}catch(e){b.textContent='ما قدرنا ننسخ، انسخها يدوي'}
+  setTimeout(()=>b.textContent='نسخ القطة للقروب',1600)});
+$('date').textContent=new Date().toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'long',year:'numeric'});
+load();calc();
+}
+</script>
+</body>
+</html>
